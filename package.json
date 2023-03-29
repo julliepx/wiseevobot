@@ -1,0 +1,22 @@
+{
+  "name": "wiseevobot",
+  "version": "1.0.0",
+  "description": "Wise Evolution Bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julliepx/wiseevobot.git"
+  },
+  "author": "Jullie Paixão",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/julliepx/wiseevobot/issues"
+  },
+  "homepage": "https://github.com/julliepx/wiseevobot#readme",
+  "dependencies": {
+    "discord.js": "^14.8.0"
+  }
+}
