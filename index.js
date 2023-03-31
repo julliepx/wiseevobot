@@ -1,4 +1,4 @@
-const { Client, Collection, GatewayIntentBits, ChannelType, EmbedBuilder } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, ChannelType, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences] });
 const config = require('./config.json');
 const fs = require('fs');
@@ -54,102 +54,79 @@ const channelNumberFileCompra = './channelNumberCompra.txt';
 if (!fs.existsSync(channelNumberFileCompra)) {
     fs.writeFileSync(channelNumberFileCompra, '0');
 }
-client.on('interactionCreate', async interaction => {
+
+const createEmbed = async (interaction, message) => {
+    const embed = new EmbedBuilder()
+        .setColor('#2b2d31')
+        .setDescription(`Ticket aberto por <@${interaction.user.id}>`)
+        .setFooter({ text: 'Atenciosamente, Wise Evolution ©️ Todos direitos reservados.', iconURL: null })
+        .addFields({
+            name: 'Assunto',
+            value: `Este ticket foi aberto para ${message}.`,
+            inline: false
+        })
+    return embed
+}
+
+const currentChannelNumberSuporte = parseInt(fs.readFileSync(channelNumberFileSuporte, 'utf8'));
+const currentChannelNumberReportar = parseInt(fs.readFileSync(channelNumberFileReportar, 'utf8'));
+const currentChannelNumberDenuncia = parseInt(fs.readFileSync(channelNumberFileDenuncia, 'utf8'));
+const currentChannelNumberCompra = parseInt(fs.readFileSync(channelNumberFileCompra, 'utf8'));
+
+const createTicket = async (ticketType, interaction, parentCategorie, embedType, channelNumberFileType, currentChannelNumberType) => {
     const message = '<@&1083238906587271208>';
-    const embedSuporte = new EmbedBuilder()
-        .setColor('#2b2d31')
-        .setDescription(`Ticket aberto por <@${interaction.user.id}>`)
-        .setFooter({ text: 'Atenciosamente, Wise Evolution ©️ Todos direitos reservados.', iconURL: null })
-        .addFields({
-            name: 'Assunto',
-            value: '```Este ticket foi aberto para suporte geral.```',
-            inline: false
-        })
-    const embedCompra = new EmbedBuilder()
-        .setColor('#2b2d31')
-        .setDescription(`Ticket aberto por <@${interaction.user.id}>`)
-        .setFooter({ text: 'Atenciosamente, Wise Evolution ©️ Todos direitos reservados.', iconURL: null })
-        .addFields({
-            name: 'Assunto',
-            value: '```Este ticket foi aberto para aquisição de pacotes oferecidos pelo servidor.```',
-            inline: false
-        })
-    const embedDenuncia = new EmbedBuilder()
-        .setColor('#2b2d31')
-        .setDescription(`Ticket aberto por <@${interaction.user.id}>`)
-        .setFooter({ text: 'Atenciosamente, Wise Evolution ©️ Todos direitos reservados.', iconURL: null })
-        .addFields({
-            name: 'Assunto',
-            value: '```Este ticket foi aberto para denúncias de diversos tipos.```',
-            inline: false
-        })
-    const embedReportar = new EmbedBuilder()
-        .setColor('#2b2d31')
-        .setDescription(`Ticket aberto por <@${interaction.user.id}>`)
-        .setFooter({ text: 'Atenciosamente, Wise Evolution ©️ Todos direitos reservados.', iconURL: null })
-        .addFields({
-            name: 'Assunto',
-            value: '```Este ticket foi aberto para reportar algum erro encontrado no servidor.```',
-            inline: false
-        })
-
-    const selected = interaction.values[0];
     const guild = interaction.guild;
-    const currentChannelNumberSuporte = parseInt(fs.readFileSync(channelNumberFileSuporte, 'utf8'));
-    const currentChannelNumberReportar = parseInt(fs.readFileSync(channelNumberFileReportar, 'utf8'));
-    const currentChannelNumberDenuncia = parseInt(fs.readFileSync(channelNumberFileDenuncia, 'utf8'));
-    const currentChannelNumberCompra = parseInt(fs.readFileSync(channelNumberFileCompra, 'utf8'));
+    await interaction.deferReply({ ephemeral: true });
+    const channelName = `TICKET-${ticketType}-${currentChannelNumberType}`;
+    guild.channels.create({
+        name: channelName, type: ChannelType.GuildText, parent: parentCategorie,
+        permissionOverwrites: [
+            {
+                id: guild.id,
+                deny: [PermissionsBitField.Flags.ViewChannel],
+            },
+            {
+                id: interaction.user.id,
+                allow: [PermissionsBitField.Flags.ViewChannel],
+            },
+            {
+                id: '1084835609706762270',
+                allow: [PermissionsBitField.Flags.ViewChannel],
+            }
+        ]
+    })
+        .then(channel => {
+            channel.send({ content: message, embeds: [embedType] })
+            interaction.editReply(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
+            interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
+            fs.writeFileSync(channelNumberFileType, `${currentChannelNumberType + 1}`)
+        })
+        .catch(console.error);
+}
 
-    if (selected === 'suporte') {
-        await interaction.deferReply({ ephemeral: true });
-        const channelName = `TICKET-SUPORTE-${currentChannelNumberSuporte}`;
-        guild.channels.create({ name: channelName, type: ChannelType.GuildText, parent: '1091081468278734878' })
-            .then(channel => {
-                channel.send({ content: message, embeds: [embedSuporte] })
-                interaction.editReply(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                fs.writeFileSync(channelNumberFileSuporte, `${currentChannelNumberSuporte + 1}`)
-            })
-            .catch(console.error);
-    }
+client.on('interactionCreate', async interaction => {
+    const selected = interaction.values[0];
 
-    if (selected === 'compra') {
-        await interaction.deferReply({ ephemeral: true });
-        const channelName = `TICKET-COMPRA-${currentChannelNumberCompra}`;
-        guild.channels.create({ name: channelName, type: ChannelType.GuildText, parent: '1091081377241378917' })
-            .then(channel => {
-                channel.send({ content: message, embeds: [embedCompra] })
-                interaction.editReply(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                fs.writeFileSync(channelNumberFileCompra, `${currentChannelNumberCompra + 1}`)
-            })
-            .catch(console.error);
-    }
+    switch (selected) {
+        case 'suporte': {
+            const embed = await createEmbed(interaction, 'suporte geral.')
+            createTicket('SUPORTE', interaction, '1091081468278734878', embed, channelNumberFileSuporte, currentChannelNumberSuporte)
+        }
 
-    if (selected === 'denuncia') {
-        await interaction.deferReply({ ephemeral: true });
-        const channelName = `TICKET-DENUNCIA-${currentChannelNumberDenuncia}`;
-        guild.channels.create({ name: channelName, type: ChannelType.GuildText, parent: '1091081406068826182' })
-            .then(channel => {
-                channel.send({ content: message, embeds: [embedDenuncia] })
-                interaction.editReply(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                fs.writeFileSync(channelNumberFileDenuncia, `${currentChannelNumberDenuncia + 1}`)
-            })
-            .catch(console.error);
-    }
+        case 'reportar': {
+            const embed = await createEmbed(interaction, 'reportar algum erro encontrado no servidor.')
+            createTicket('REPORT', interaction, '1091081468278734878', embed, channelNumberFileReportar, currentChannelNumberReportar)
+        }
 
-    if (selected === 'reportar') {
-        await interaction.deferReply({ ephemeral: true });
-        const channelName = `TICKET-REPORT-${currentChannelNumberReportar}`;
-        guild.channels.create({ name: channelName, type: ChannelType.GuildText, parent: '1091081435122769930' })
-            .then(channel => {
-                channel.send({ content: message, embeds: [embedReportar] })
-                interaction.editReply(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
-                fs.writeFileSync(channelNumberFileReportar, `${currentChannelNumberReportar + 1}`)
-            })
-            .catch(console.error);
+        case 'denuncia': {
+            const embed = await createEmbed(interaction, 'denúncias de diversos tipos.')
+            createTicket('DENUNCIA', interaction, '1091081468278734878', embed, channelNumberFileDenuncia, currentChannelNumberDenuncia)
+        }
+
+        case 'compra': {
+            const embed = await createEmbed(interaction, 'aquisição de pacotes oferecidos pelo servidor.')
+            createTicket('COMPRA', interaction, '1091081468278734878', embed, channelNumberFileCompra, currentChannelNumberCompra)
+        }
     }
 });
 

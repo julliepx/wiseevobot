@@ -93,5 +93,6 @@ module.exports.createbutton = async (message) => {
                     value: 'compra',
                 }));
 
+    message.delete();
     message.channel.send({ embeds: [embed], components: [row] });
 }
