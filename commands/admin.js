@@ -1,5 +1,6 @@
 //EMBEDS
 const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { closeTicket } = require('../src/utils.js');
 const fs = require('fs');
 
 //ENVIAR UM EMBED PASSANDO UM JSON = !say
@@ -57,7 +58,7 @@ module.exports.say = async (message) => {
     message.channel.send({ embeds: [embed] });
 }
 
-module.exports.createbutton = async (message) => {
+module.exports.createticket = async (message) => {
     const embed = new EmbedBuilder()
         .setTitle('Wise Suporte')
         .setColor('#2b2d31')
@@ -95,4 +96,8 @@ module.exports.createbutton = async (message) => {
 
     message.delete();
     message.channel.send({ embeds: [embed], components: [row] });
+}
+
+module.exports.close = async (message) => {
+    closeTicket(message);
 }
