@@ -94,8 +94,8 @@ module.exports.createticket = async (message) => {
                     value: 'compra',
                 }));
 
-    message.delete();
-    message.channel.send({ embeds: [embed], components: [row] });
+    await message.delete();
+    await message.channel.send({ embeds: [embed], components: [row] });
 }
 
 module.exports.close = async (message) => {
