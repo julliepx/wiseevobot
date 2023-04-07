@@ -78,10 +78,13 @@ const createTicket = async (ticketType, interaction, parentCategorie, embedType,
     const row = new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
+                .setLabel('Poke')
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId('pokeButton'),
+            new ButtonBuilder()
                 .setLabel('Fechar')
                 .setStyle(ButtonStyle.Danger)
                 .setCustomId('closeButton')
-                .setEmoji('❌')
         )
 
     const message = '<@&1083238906587271208>';
@@ -99,18 +102,15 @@ const createTicket = async (ticketType, interaction, parentCategorie, embedType,
                 allow: [PermissionsBitField.Flags.ViewChannel],
             },
             {
-                id: '1084835609706762270',
+                id: '1083238906587271208',
                 allow: [PermissionsBitField.Flags.ViewChannel],
             }
         ]
     })
-        .then( async (channel) => {
+        .then(async (channel) => {
             channel.send({ content: message, embeds: [embedType], components: [row] })
             await interaction.update();
-            await interaction.editReply({ content: `Seu ticket foi criado, acesse aqui: <#${channel.id}>`});
-            /* setTimeout(() => {
-                interaction.deleteReply();
-            }, 2000) */
+            await interaction.editReply({ content: `Seu ticket foi criado, acesse aqui: <#${channel.id}>` });
             interaction.user.send(`Seu ticket foi criado, acesse aqui: <#${channel.id}>`)
             fs.writeFileSync(channelNumberFileType, `${currentChannelNumberType + 1}`)
         })
@@ -126,25 +126,25 @@ client.on('interactionCreate', async interaction => {
         switch (selected) {
             case 'suporte': {
                 const embed = await createEmbed(interaction, 'suporte geral.')
-                createTicket('SUPORTE', interaction, '1091081468278734878', embed, channelNumberFileSuporte, currentChannelNumberSuporte)
+                createTicket('SUPORTE', interaction, '1045253644410421321', embed, channelNumberFileSuporte, currentChannelNumberSuporte)
                 break;
             }
 
             case 'reportar': {
                 const embed = await createEmbed(interaction, 'reportar algum erro encontrado no servidor.')
-                createTicket('REPORT', interaction, '1091081468278734878', embed, channelNumberFileReportar, currentChannelNumberReportar)
+                createTicket('REPORT', interaction, '1045253644410421326', embed, channelNumberFileReportar, currentChannelNumberReportar)
                 break;
             }
 
             case 'denuncia': {
                 const embed = await createEmbed(interaction, 'denúncias de diversos tipos.')
-                createTicket('DENUNCIA', interaction, '1091081468278734878', embed, channelNumberFileDenuncia, currentChannelNumberDenuncia)
+                createTicket('DENUNCIA', interaction, '1049081572684468334', embed, channelNumberFileDenuncia, currentChannelNumberDenuncia)
                 break;
             }
 
             case 'compra': {
                 const embed = await createEmbed(interaction, 'aquisição de pacotes oferecidos pelo servidor.')
-                createTicket('COMPRA', interaction, '1091081468278734878', embed, channelNumberFileCompra, currentChannelNumberCompra)
+                createTicket('COMPRA', interaction, '1045253644410421320', embed, channelNumberFileCompra, currentChannelNumberCompra)
                 break;
             }
         }
@@ -157,7 +157,7 @@ client.on('interactionCreate', async interaction => {
 
         switch (button) {
             case 'closeButton': {
-                if (!channel.guild.members.cache.get(interaction.user.id).roles.cache.has('1083051429532536842')) {
+                if (!channel.guild.members.cache.get(interaction.user.id).roles.cache.has('1083238906587271208')) {
                     channel.permissionOverwrites.set([
                         {
                             id: channel.guild.id,
@@ -172,7 +172,7 @@ client.on('interactionCreate', async interaction => {
                             allow: [PermissionsBitField.Flags.ViewChannel],
                         }
                     ])
-                } else if (channel.guild.members.cache.get(interaction.user.id).roles.cache.has('1083051429532536842')) {
+                } else if (channel.guild.members.cache.get(interaction.user.id).roles.cache.has('1083238906587271208')) {
                     interaction.channel.delete();
                     closeTicket(interaction);
                 }
