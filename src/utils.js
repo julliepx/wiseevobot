@@ -3,7 +3,6 @@ const { AttachmentBuilder } = require('discord.js');
 async function closeTicket(message) {
     const messages = await message.channel.messages.fetch();
     const messagesRightOrder = messages.reverse();
-    console.log(messagesRightOrder);
     const transcript = messagesRightOrder.map(message => `<p><strong>${message.author.username}:</strong> ${message.content}</p>`).join('\n');
 
     const html = `
@@ -70,8 +69,8 @@ async function closeTicket(message) {
     const attachment = new AttachmentBuilder()
         .setFile('transcript.html')
 
-    message.guild.channels.cache.get('1083589040739192862').send({ files: [attachment] });
-    message.channel.delete();
+    await message.guild.channels.cache.get('1083589040739192862').send({ files: [attachment] });
+    await message.channel.delete();
 }
 
 module.exports.closeTicket = closeTicket;
