@@ -128,7 +128,11 @@ const createTicket = async (
     new ButtonBuilder()
       .setLabel("Membro -")
       .setStyle(ButtonStyle.Danger)
-      .setCustomId("removeMemberButton")
+      .setCustomId("removeMemberButton"),
+    new ButtonBuilder()
+      .setLabel("Criar Call")
+      .setStyle(ButtonStyle.Primary)
+      .setCustomId("createCallButton")
   );
 
   const message = "<@&1083235223912849510>";
@@ -345,6 +349,43 @@ client.on("interactionCreate", async (interaction) => {
           await interaction.showModal(modal);
         }
       }
+
+      case "createCallButton": {
+        const guild = interaction.guild;
+        if (button === "createCallButton") {
+          const ticketMembers = await channel.members.filter((member) => member.roles.cache.has("1082895973640060978"));
+
+          await guild.channels.create({
+            name: `ticket-${interaction.user.username}`,
+            type: ChannelType.GuildVoice,
+            parent: channel.parentId,
+            permissionOverwrites: [
+              {
+                id: guild.id,
+                deny: [PermissionsBitField.Flags.ViewChannel],
+              },
+              {
+                id: interaction.user.id,
+                allow: [PermissionsBitField.Flags.ViewChannel],
+              },
+              {
+                id: "1083235223912849510",
+                allow: [PermissionsBitField.Flags.ViewChannel],
+              },
+            ],
+          })
+            .then((channel) => {
+              ticketMembers.forEach(async (member) => {
+                channel.permissionOverwrites.edit(member.id, { ViewChannel: true });
+              });
+              interaction.reply({ content: `Canal de voz criado com sucesso!` })
+            })
+            .catch(() => {
+              interaction.reply({ content: `Não foi possível criar o canal de voz.` })
+            });
+        }
+
+      }
     }
   }
 
@@ -354,50 +395,52 @@ client.on("interactionCreate", async (interaction) => {
 
     switch (modal) {
       case "addMemberModal": {
-        if(modal === "addMemberModal"){
-            const selectedMember =
+        if (modal === "addMemberModal") {
+          const selectedMember =
             interaction.fields.getTextInputValue("selectedMember");
 
-        await interaction.guild.members
-          .fetch(selectedMember)
-          .then((member) => {
-            channel.permissionOverwrites.edit(member.id, { ViewChannel: true });
-            channel.send({
-              content: `<@${member.user.id}> foi adicionado ao ticket com sucesso!`,
+          await interaction.guild.members
+            .fetch(selectedMember)
+            .then((member) => {
+              channel.permissionOverwrites.edit(member.id, {
+                ViewChannel: true,
+              });
+              interaction.reply({
+                content: `<@${member.user.id}> foi adicionado ao ticket com sucesso!`,
+              });
+            })
+            .catch(() => {
+              interaction.reply({
+                content: "Membro não encontrado.",
+              });
             });
-          })
-          .catch(() => {
-            channel.send({
-              content: "Membro não encontrado.",
-            });
-          });
         }
       }
 
       case "removeMemberModal": {
-        if(modal === "removeMemberModal") {
-            const selectedMember =
+        if (modal === "removeMemberModal") {
+          const selectedMember =
             interaction.fields.getTextInputValue("selectedMember");
-  
+
           await interaction.guild.members
             .fetch(selectedMember)
             .then((member) => {
               channel.permissionOverwrites.edit(member.id, {
                 ViewChannel: false,
               });
-              channel.send({
+              interaction.reply({
                 content: `<@${member.user.id}> foi removido ao ticket com sucesso!`,
               });
             })
             .catch(() => {
-              channel.send({
-                content: "Membro não encontrado."
+              interaction.reply({
+                content: "Membro não encontrado.",
               });
             });
+        }
       }
     }
   }
-}
 });
 
 client.login(config.token);
