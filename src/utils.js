@@ -19,9 +19,7 @@ async function query(...args) {
     })
 }
 
-module.exports = {
-    query
-}
+module.exports.query = query;
 
 async function backup(message) {
 
