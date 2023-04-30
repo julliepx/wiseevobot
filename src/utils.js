@@ -23,6 +23,17 @@ module.exports = {
     query
 }
 
+const CHAR_LIST = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZ'
+const CHAR_LIST_LENGTH = CHAR_LIST.length
+
+const randomKey = (keyLength = 16) => {
+    let key = ''
+    for (let i = 1; i <= keyLength; i++) {
+      key += CHAR_LIST[Math.floor(Math.random() * CHAR_LIST_LENGTH)]
+    }
+    return key
+  }
+
 async function backup(message) {
 
     fs.readFile('./src/base.sql', 'utf8', (err, fixedLines) => {
@@ -194,6 +205,7 @@ async function sendMemberSuggestion(message) {
     await message.delete();
 }
 
+module.exports.randomKey = randomKey;
 module.exports.closeTicket = closeTicket;
 module.exports.backup = backup;
 module.exports.sendMemberSuggestion = sendMemberSuggestion;
