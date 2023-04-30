@@ -1,6 +1,6 @@
 //EMBEDS
 const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { closeTicket, createSuggestion } = require('../src/utils.js');
+const { closeTicket, backup } = require('../src/utils.js');
 const fs = require('fs');
 
 //ENVIAR UM EMBED PASSANDO UM JSON = !say
@@ -78,21 +78,21 @@ module.exports.createticket = async (message) => {
                     description: 'Clique aqui para abrir um TICKET para Suporte.',
                     value: 'suporte',
                 },
-                {
-                    label: '🛠️ Bug Reports',
-                    description: 'Clique aqui para abrir um TICKET para Reportar.',
-                    value: 'reportar',
-                },
-                {
-                    label: '🚫 Denúncias',
-                    description: 'Clique aqui para abrir um TICKET para Denunciar.',
-                    value: 'denuncia',
-                },
-                {
-                    label: '💵 Compras',
-                    description: 'Clique aqui para abrir um TICKET para Comprar.',
-                    value: 'compra',
-                }));
+                    {
+                        label: '🛠️ Bug Reports',
+                        description: 'Clique aqui para abrir um TICKET para Reportar.',
+                        value: 'reportar',
+                    },
+                    {
+                        label: '🚫 Denúncias',
+                        description: 'Clique aqui para abrir um TICKET para Denunciar.',
+                        value: 'denuncia',
+                    },
+                    {
+                        label: '💵 Compras',
+                        description: 'Clique aqui para abrir um TICKET para Comprar.',
+                        value: 'compra',
+                    }));
 
     await message.delete();
     await message.channel.send({ embeds: [embed], components: [row] });
@@ -110,6 +110,11 @@ module.exports.createsuggestion = async (message) => {
 
     await message.delete();
     await message.channel.send({ embeds: [embed] });
+}
+
+module.exports.backupdb = async (message) => {
+    backup(message);
+    message.delete();
 }
 
 module.exports.close = async (message) => {

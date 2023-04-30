@@ -43,3 +43,8 @@ module.exports.createsuggestion = checkPermission({
   permissions: [ROLES.isStaff],
   argCount: 0
 })
+
+module.exports.backupdb = checkPermission({
+  permissions: [ROLES.isStaff],
+  argCount: 0
+})

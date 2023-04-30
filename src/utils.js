@@ -1,5 +1,7 @@
 const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
 const connection = require('./connection.js')
+const fs = require('fs');
+
 
 /**
  * Retorna uma promise com a query a ser executada
@@ -7,18 +9,78 @@ const connection = require('./connection.js')
  * @returns {Promise}
  */
 async function query(...args) {
-  return new Promise((resolve, reject) => {
-    connection.query(...args, (err, result) => {
-      if (err)
-        reject(err)
-      else
-        resolve(result)
+    return new Promise((resolve, reject) => {
+        connection.query(...args, (err, result) => {
+            if (err)
+                reject(err)
+            else
+                resolve(result)
+        })
     })
-  })
 }
 
 module.exports = {
-  query
+    query
+}
+
+async function backup(message) {
+
+    fs.readFile('./src/base.sql', 'utf8', (err, fixedLines) => {
+        if (err) {
+            console.error(`Erro ao ler arquivo de linhas fixas: ${err.message}`);
+            return;
+        }
+
+        const sql = 'SHOW TABLES';
+        connection.query(sql, (err, result, fields) => {
+            if (err) {
+                console.error(`Erro ao executar consulta: ${err.message}`);
+                return;
+            }
+
+            const tables = result.map((table) => table[`Tables_in_${connection.config.database}`]);
+
+            // Cria um loop para obter os dados de cada tabela
+            const data = [];
+            const promises = tables.map((table) => {
+                return new Promise((resolve, reject) => {
+                    const sql = `SELECT * FROM ${table}`;
+                    connection.query(sql, (err, result, fields) => {
+                        if (err) {
+                            reject(`Erro ao executar consulta: ${err.message}`);
+                            return;
+                        }
+                        if (!result || !result.length) {
+                            resolve();
+                            return;
+                        }
+                        data.push({ table, rows: result });
+                        resolve();
+                    });
+                });
+            });
+
+            Promise.all(promises).then(() => {         
+                let dump = fixedLines + '\n\n';
+
+                data.map(({ table, rows }) => {
+                    if (!rows || !rows.length) {
+                        return '';
+                    }
+                    const insertRows = rows.map((row) => `(${Object.values(row).map((v) => `"${v}"`).join(', ')})`).join(',\n');
+                    dump += `-- Tabela: ${table}\n`;
+                    dump += `INSERT INTO ${table} (${Object.keys(rows[0]).join(', ')}) VALUES\n${insertRows};\n\n`;
+                });
+                fs.writeFileSync('backup.sql', dump);
+                const attachment = new AttachmentBuilder()
+                        .setFile('backup.sql')
+
+                    message.channel.send({ files: [attachment] });
+            }).catch((err) => {
+                console.error(err);
+            });
+        });
+    });
 }
 
 async function closeTicket(message) {
@@ -100,7 +162,7 @@ async function sendMemberSuggestion(message) {
         const botMessages = messages.filter(msg => msg.author.id === '1090718591093047316');
         const lastBotMessage = botMessages.first();
 
-        if(lastBotMessage && botMessages.size > 2){
+        if (lastBotMessage && botMessages.size > 2) {
             lastBotMessage.delete();
         } else {
             return;
@@ -115,10 +177,10 @@ async function sendMemberSuggestion(message) {
         .setColor('#2b2d31')
         .setDescription(`📝 **Sugestão:**\n ${suggestion}`);
 
-    const suggestionMessage = await suggestionChannel.send({ embeds: [embedUser]});
+    const suggestionMessage = await suggestionChannel.send({ embeds: [embedUser] });
     await suggestionMessage.react('👍');
     await suggestionMessage.react('👎');
-    
+
     const embedBot = new EmbedBuilder()
         .setTitle('Wise Suporte')
         .setColor('#2b2d31')
@@ -133,4 +195,5 @@ async function sendMemberSuggestion(message) {
 }
 
 module.exports.closeTicket = closeTicket;
+module.exports.backup = backup;
 module.exports.sendMemberSuggestion = sendMemberSuggestion;
