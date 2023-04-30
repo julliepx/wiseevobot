@@ -20,7 +20,7 @@ const checkPermission = ({ permissions, allowedIds = [], argCount = 1 }) => (mes
 
   if (permissions) {
     const allowed = Array.isArray(permissions)
-      ? permissions.find(p => p(message.member))
+      ? permissions.find(p => (message.member))
       : permissions(message.member)
 
     return allowed ? ALLOW.BY_ROLE : ALLOW.NOT_ALLOWED
@@ -28,6 +28,8 @@ const checkPermission = ({ permissions, allowedIds = [], argCount = 1 }) => (mes
 
   return permissions === null ? ALLOW.BY_ALL : ALLOW.NOT_ALLOWED
 }
+
+const IDS_CODES = [IDS.JULLIE]
 
 module.exports.close = checkPermission({
     permissions: [ROLES.isStaff],
@@ -47,4 +49,42 @@ module.exports.createsuggestion = checkPermission({
 module.exports.backupdb = checkPermission({
   permissions: [ROLES.isStaff],
   argCount: 0
+})
+
+module.exports.discord = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+
+module.exports.wl = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+
+module.exports.unwl = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+
+module.exports.vehicle = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+
+module.exports.persona = checkPermission({
+  permissions: [ROLES.isStaff],
+  argCount: 2
+})
+
+module.exports.ban = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+module.exports.unban = checkPermission({
+  permissions: [ROLES.isStaff]
+})
+
+module.exports.money = checkPermission({
+  permissions: [ROLES.isStaff,]
+})
+
+module.exports.garage = checkPermission({
+  allowedIds: IDS_CODES,
+  permissions: [ROLES.isStaff],
+  argCount: 2
 })

@@ -1,3 +1,5 @@
+require('./global')
+
 const {
   Client,
   Collection,
