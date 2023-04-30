@@ -29,6 +29,7 @@ const fs = require("fs");
 const commands = require("./commands/commands.js");
 const { closeTicket, sendMemberSuggestion } = require("./src/utils");
 const utils = require('./src/utils.js');
+const axios = require('axios');
 
 client.commands = new Collection();
 
@@ -50,17 +51,17 @@ client.on("messageCreate", async (message) => {
   }
 
   //WHITELIST
-  if(message.channel.id === '1080618317921915090' && !message.content.startsWith('!')) {
+  if (message.channel.id === '1080618317921915090' && !message.content.startsWith('!')) {
     const member = message.author;
     const id = message.content;
-  
+
     if (!member)
-        throw new CommandError('Membro não encontrado.')
+      throw new CommandError('Membro não encontrado.')
 
     const { affectedRows } = await utils.query(`UPDATE vrp_infos SET whitelist = 1, discord = ? WHERE user_id = ?`, [member.id, id])
 
     if (!affectedRows) {
-        message.channel.send(`${member} seu ID não foi encontrado. Certifique-se de que você digitou corretamente e que também você já tentou logar na cidade pelo menos uma vez.`)
+      message.channel.send(`${member} seu ID não foi encontrado. Certifique-se de que você digitou corretamente e que também você já tentou logar na cidade pelo menos uma vez.`)
     } else {
       await message.channel.send(`${member} você está liberado(a) para jogar em nosso servidor :D`)
     }
@@ -82,6 +83,55 @@ client.on("messageCreate", async (message) => {
   const command = args.shift().toLowerCase();
 
   commands(message, command, args);
+});
+
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  const lostRole = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id)).first();
+  if (lostRole == 'IDDAROLE') {
+    const [user] = await utils.query(`SELECT * FROM boost_keys WHERE discord = ?`, [newMember.id])
+
+    axios.post('https://localhost:30120/discord/retainboost', {
+      discord: newMember.user.id,
+      key: user.code
+    },
+      {
+        headers: {
+          'x-api-key': ''
+        }
+      })
+      .then(response => {
+        console.log('Requisição enviada com sucesso', response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao enviar a requisição: ', error);
+      });
+  }
+
+  const addedRole = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id)).first();
+  if (addedRole) {
+    const [user] = await utils.query(`SELECT * FROM vrp_infos WHERE discord = ?`, [newMember.id])
+
+    const key = utils.randomKey(12);
+    if (!user) {
+      const { affectedRows } = await utils.query(`INSERT INTO boost_keys VALUES(?, ?, 0, ?)`, [null, key, newMember.id])
+
+      if (!affectedRows) {
+        console.log('Erro ao gerar a key.')
+      } else {
+        console.log('Key gerada com sucesso! Enviar para o membro.')
+        newMember.send(`Olá ${newMember}, tudo bem? Você recebeu uma key de boost para utilizar em nosso servidor. Basta utilizar: /comando ${key}`)
+      }
+    } else {
+      const { affectedRows } = await utils.query(`INSERT INTO boost_keys VALUES(?, ?, 0, ?)`, [user.user_id, key, newMember.id])
+
+      if (!affectedRows) {
+        console.log('Erro ao gerar a key.')
+      } else {
+        console.log('Key gerada com sucesso! Enviar para o membro.')
+        newMember.send(`Olá ${newMember}, tudo bem? Você recebeu uma key de boost para utilizar em nosso servidor. Basta utilizar: /comando ${key}`)
+      }
+    }
+  }
 });
 
 //CRIA A ORDEM E SETA EM 0 SE O ARQUIVO NÃO EXISTIR - Suporte
