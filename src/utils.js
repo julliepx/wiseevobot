@@ -1,4 +1,4 @@
-const { AttachmentBuilder } = require('discord.js');
+const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
 
 async function closeTicket(message) {
     const messages = await message.channel.messages.fetch();
@@ -73,4 +73,43 @@ async function closeTicket(message) {
     await message.channel.delete();
 }
 
+async function sendMemberSuggestion(message) {
+    message.channel.messages.fetch().then(messages => {
+
+        const botMessages = messages.filter(msg => msg.author.id === '1090718591093047316');
+        const lastBotMessage = botMessages.first();
+
+        if(lastBotMessage && botMessages.size > 2){
+            lastBotMessage.delete();
+        } else {
+            return;
+        }
+    })
+
+    const suggestion = message.content;
+    const suggestionChannel = message.guild.channels.cache.get('1080615600310730864');
+
+    const embedUser = new EmbedBuilder()
+        .setTitle(message.author.username)
+        .setColor('#2b2d31')
+        .setDescription(`📝 **Sugestão:**\n ${suggestion}`);
+
+    const suggestionMessage = await suggestionChannel.send({ embeds: [embedUser]});
+    await suggestionMessage.react('👍');
+    await suggestionMessage.react('👎');
+    
+    const embedBot = new EmbedBuilder()
+        .setTitle('Wise Suporte')
+        .setColor('#2b2d31')
+        .setDescription('`📝` **Sugestões**\n・Deseja sugerir algo para o servidor? Digite sua sugestão detalhadamente abaixo.')
+        .setAuthor({ name: 'Sugestões | Wise Evolution', iconURL: null })
+        .setColor('#007FFF')
+        .setFooter({ text: 'Wise Suporte' })
+        .setImage('https://cdn.discordapp.com/attachments/792875068556312587/1091061318779404408/ticket.png');
+
+    await message.channel.send({ embeds: [embedBot] });
+    await message.delete();
+}
+
 module.exports.closeTicket = closeTicket;
+module.exports.sendMemberSuggestion = sendMemberSuggestion;

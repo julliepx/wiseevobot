@@ -38,3 +38,8 @@ module.exports.createticket = checkPermission({
     permissions: [ROLES.isStaff],
     argCount: 0
 })
+
+module.exports.createsuggestion = checkPermission({
+  permissions: [ROLES.isStaff],
+  argCount: 0
+})

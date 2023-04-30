@@ -25,7 +25,7 @@ const client = new Client({
 const config = require("./config.json");
 const fs = require("fs");
 const commands = require("./commands/commands.js");
-const { closeTicket } = require("./src/utils");
+const { closeTicket, sendMemberSuggestion } = require("./src/utils");
 
 client.commands = new Collection();
 
@@ -40,6 +40,11 @@ client.on("messageCreate", async (message) => {
 
   //IGNORA AS MENSAGENS PRIVADAS
   if (message.channel.type === "dm") return;
+
+  //SUGESTOES
+  if (message.channel.id === '1080615600310730864' && !message.content.startsWith('!')) {
+    sendMemberSuggestion(message);
+  }
 
   if (message.content[0] != config.prefix) {
     return;

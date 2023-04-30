@@ -1,6 +1,6 @@
 //EMBEDS
 const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { closeTicket } = require('../src/utils.js');
+const { closeTicket, createSuggestion } = require('../src/utils.js');
 const fs = require('fs');
 
 //ENVIAR UM EMBED PASSANDO UM JSON = !say
@@ -96,6 +96,20 @@ module.exports.createticket = async (message) => {
 
     await message.delete();
     await message.channel.send({ embeds: [embed], components: [row] });
+}
+
+module.exports.createsuggestion = async (message) => {
+    const embed = new EmbedBuilder()
+        .setTitle('Wise Suporte')
+        .setColor('#2b2d31')
+        .setDescription('`📝` **Sugestões**\n・Deseja sugerir algo para o servidor? Digite sua sugestão detalhadamente abaixo.')
+        .setAuthor({ name: 'Sugestões | Wise Evolution', iconURL: null })
+        .setColor('#007FFF')
+        .setFooter({ text: 'Wise Suporte' })
+        .setImage('https://cdn.discordapp.com/attachments/792875068556312587/1091061318779404408/ticket.png');
+
+    await message.delete();
+    await message.channel.send({ embeds: [embed] });
 }
 
 module.exports.close = async (message) => {
