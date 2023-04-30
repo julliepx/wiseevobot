@@ -1,4 +1,25 @@
 const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
+const connection = require('./connection.js')
+
+/**
+ * Retorna uma promise com a query a ser executada
+ * @param  {...any} args 
+ * @returns {Promise}
+ */
+async function query(...args) {
+  return new Promise((resolve, reject) => {
+    connection.query(...args, (err, result) => {
+      if (err)
+        reject(err)
+      else
+        resolve(result)
+    })
+  })
+}
+
+module.exports = {
+  query
+}
 
 async function closeTicket(message) {
     const messages = await message.channel.messages.fetch();

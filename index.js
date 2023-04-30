@@ -26,6 +26,7 @@ const config = require("./config.json");
 const fs = require("fs");
 const commands = require("./commands/commands.js");
 const { closeTicket, sendMemberSuggestion } = require("./src/utils");
+const utils = require('./src/utils.js');
 
 client.commands = new Collection();
 
@@ -44,6 +45,31 @@ client.on("messageCreate", async (message) => {
   //SUGESTOES
   if (message.channel.id === '1080615600310730864' && !message.content.startsWith('!')) {
     sendMemberSuggestion(message);
+  }
+
+  //WHITELIST
+  if(message.channel.id === '1080618317921915090' && !message.content.startsWith('!')) {
+    const member = message.author;
+    const id = message.content;
+  
+    if (!member)
+        throw new CommandError('Membro não encontrado.')
+
+    const { affectedRows } = await utils.query(`UPDATE vrp_infos SET whitelist = 1, discord = ? WHERE user_id = ?`, [member.id, id])
+
+    if (!affectedRows) {
+        message.channel.send(`${member} seu ID não foi encontrado. Certifique-se de que você digitou corretamente e que também você já tentou logar na cidade pelo menos uma vez.`)
+    } else {
+      await message.channel.send(`${member} você está liberado(a) para jogar em nosso servidor :D`)
+    }
+
+    /* await member.roles.add(ROLES.MORADOR);
+    await member.roles.remove(ROLES.VIAJANTE);
+    await member.roles.remove(ROLES.APROVADO); */
+
+
+    //member.send(`${member} Você está liberado para jogar em nosso servidor :D`)
+    /* await message.channel.send(`${member} você está liberado(a) para jogar em nosso servidor :D`) */
   }
 
   if (message.content[0] != config.prefix) {
